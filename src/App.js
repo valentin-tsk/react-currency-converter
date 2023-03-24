@@ -1,5 +1,6 @@
 import './App.css';
 import Converter from './components/Converter'
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
     return (

@@ -10,24 +10,24 @@ body {
     display: flex;
     align-items: center;
     flex-direction: column;
-    padding-top: 120px;
+    padding-top: 70px;
     background-image: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
 }
 
 .heading {
-    font-size: 24px;
+    font-size: 16px;
     position: relative;
 }
 
 .heading::before {
     content: "";
     background-image: url('/public/icon-256x256.png');
-    height: 100px;
-    width: 100px;
+    height: 60px;
+    width: 60px;
     display: block;
     position: absolute;
-    top: -80px;
-    left: calc(50% - 50px);
+    top: -50px;
+    left: calc(50% - 30px);
     background-size: contain;
 }
 
