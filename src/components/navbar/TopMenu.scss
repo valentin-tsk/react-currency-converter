@@ -13,8 +13,10 @@
   }
 
   .navbar-nav > a {
-    height: 100%;
-    display: block;
+    height: 66px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     text-align: center;
     flex: 1;
     transition: all .5s ease;
