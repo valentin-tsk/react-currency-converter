@@ -1,29 +1,23 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import Select from 'react-select';
 import {HiSwitchHorizontal} from 'react-icons/hi';
 import {useQuery} from 'react-query';
+import CurrencyApiService from '../../services/CurrencyApiService';
 import './Converter.scss';
+import currencyApiService from '../../services/CurrencyApiService';
+import AuthService from '../../services/AuthService';
+import authService from "../../services/AuthService";
 
 const Converter = () => {
-    const [apiUrl] = useState('https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies');
-    const [from, setFrom] = useState('usd');
+
+    const [from, setFrom] = useState(AuthService.getCurrentUser() ? AuthService.getCurrentUser().baseCurrency : 'usd');
     const [to, setTo] = useState('rub');
     const [amount, setAmount] = useState(0);
     const [ratios, setRatios] = useState([]);
     const [names, setNames] = useState([]);
     const [converted, setConverted] = useState(0);
 
-    const fetchRatios = async () => {
-        const res = await fetch(`${apiUrl}/${from}.json`);
-        return res.json();
-    };
-
-    const fetchNames = async () => {
-        const res = await fetch(`${apiUrl}.json`);
-        return res.json();
-    };
-
-    useQuery(`currenciesDescriptions`, fetchNames,
+    useQuery(`currenciesDescriptions`, CurrencyApiService.fetchNames,
         {
             staleTime: 10000,
             onSuccess: (res) => {
@@ -32,8 +26,13 @@ const Converter = () => {
         }
     );
 
-    const {error, status, refetch} = useQuery(`${apiUrl}/${from}`, fetchRatios,
+    const fetchRatios = () => {
+        return currencyApiService.fetchRatios(from);
+    }
+
+    const {error, status, refetch} = useQuery(`ratios-from-${from}`, fetchRatios,
         {
+            refetchOnWindowFocus: false,
             onSuccess: (res) => {
                 setConverted(amount * res[from][to]);
                 setRatios(res[from]);
@@ -60,16 +59,16 @@ const Converter = () => {
     }
 
     return (
-        <div className="converter">
-            {status === "error" && <p>{error}</p>}
-            {status === "success" && (
+        <div className='converter'>
+            {status === 'error' && <p>{error}</p>}
+            {status === 'success' && (
                 <>
-                    <div className="converter-form">
-                        <div className="converter-form__amount">
+                    <div className='converter-form'>
+                        <div className='converter-form__amount'>
                             <h3>Amount</h3>
-                            <input type="number"
-                                   className="converter-form__input"
-                                   placeholder="Enter the amount"
+                            <input type='number'
+                                   className='converter-form__input'
+                                   placeholder='Enter the amount'
                                    value={amount}
                                    onChange={(e) => {
                                        if (e.target.value.match(/^([0-9]{1,})?(\.)?([0-9]{1,})?$/)) {
@@ -78,7 +77,7 @@ const Converter = () => {
                                        }
                                    }}/>
                         </div>
-                        <div className="converter-form__from" title={names[from]}>
+                        <div className='converter-form__from' title={names[from]}>
                             <h3>From</h3>
                             <Select options={getOptions()}
                                     isSearchable={true}
@@ -88,12 +87,12 @@ const Converter = () => {
                                     }}
                                     value={from.value} placeholder={from}/>
                         </div>
-                        <div className="converter-form__switch">
-                            <HiSwitchHorizontal size="30px" onClick={() => {
+                        <div className='converter-form__switch'>
+                            <HiSwitchHorizontal size='30px' onClick={() => {
                                 flip()
                             }}/>
                         </div>
-                        <div className="converter-form__to" title={names[to]}>
+                        <div className='converter-form__to' title={names[to]}>
                             <h3>To</h3>
                             <Select options={getOptions()}
                                     isSearchable={true}
@@ -105,37 +104,44 @@ const Converter = () => {
                                     value={to.value} placeholder={to}/>
                         </div>
                     </div>
-                    <div className="converter__result">
-                        <p>{amount + " " + from + " = " + converted.toFixed(2) + " " + to}</p>
+                    <div className='converter__result'>
+                        <p>{amount + ' ' + from + ' = ' + converted.toFixed(2) + ' ' + to}</p>
                     </div>
-                    <div className="converter__ratio-table">
-                        <table className="table">
-                            <thead>
-                            <tr>
-                                <th>
-                                    Code
-                                </th>
-                                <th>
-                                    value for {amount} {from}
-                                </th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {Object.keys(ratios).map((currencyCode) => {
-                                return (
-                                    <tr key={currencyCode}>
-                                        <td>
-                                            {currencyCode}
-                                        </td>
-                                        <td>
-                                            {(amount * parseFloat(ratios[currencyCode])).toFixed(2)}
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                            </tbody>
-                        </table>
-                    </div>
+                    {AuthService.getCurrentUser() && (
+                        <div className='converter__ratio-table'>
+                            <table className='table'>
+                                <thead>
+                                <tr>
+                                    <th>
+                                        Code
+                                    </th>
+                                    <th>
+                                        value for {amount} {from}
+                                    </th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {Object.keys(ratios).map((currencyCode) => {
+                                    return (
+                                        <tr key={currencyCode}>
+                                            <td title={names[currencyCode]}>
+                                                {currencyCode}
+                                            </td>
+                                            <td>
+                                                {(amount * parseFloat(ratios[currencyCode])).toFixed(2)}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                    {!AuthService.getCurrentUser() && (
+                        <div className='converter__empty'>
+                            <h3>Log in or create an account to see full convertions list and more</h3>
+                        </div>
+                    )}
                 </>
             )}
         </div>

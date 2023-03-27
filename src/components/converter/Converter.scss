@@ -1,5 +1,10 @@
 .converter {
   width: calc(100% - 40px);
+
+  h3, button, .switch {
+    color: #e0801e;
+  }
+
   &-form {
     display: flex;
     justify-content: center;
@@ -64,6 +69,11 @@
         background-color: #ffffff;
       }
     }
+  }
+
+  &__empty {
+    width: 100%;
+    text-align: center;
   }
 }
 

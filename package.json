@@ -21,6 +21,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "start:server": "json-server --watch db.json -m ./node_modules/json-server-auth",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

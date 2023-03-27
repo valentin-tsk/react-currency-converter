@@ -1,4 +1,4 @@
-const SERVER_URL = "http://localhost:3000";
+const SERVER_URL = 'http://localhost:3000';
 const signup = (formData) => {
     return fetch(`${SERVER_URL}/users`, {
         method: 'POST',
@@ -12,28 +12,55 @@ const login = (formData) => {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(formData)
-    }.then((response) => {
-        if (response.data.accessToken) {
-            localStorage.setItem("user", JSON.stringify(response.data));
-        }
-
-        return response.data;
-    }));
+    });
 };
 
+const getUserInfo = async (userId) => {
+    const res = await fetch(`${SERVER_URL}/users/${userId}`, {
+        method: 'GET',
+    });
+    return res.json();
+};
+
+const updateUserInfo = (userData) => {
+    return fetch(`${SERVER_URL}/users/${userData.id}`, {
+        method: 'PATCH',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(userData)
+    });
+};
+
+
 const logout = () => {
-    localStorage.removeItem("user");
+    localStorage.removeItem('user');
 };
 
 const getCurrentUser = () => {
-    return JSON.parse(localStorage.getItem("user"));
+    return JSON.parse(localStorage.getItem('user'));
+};
+const setUserData = (data) => {
+    localStorage.setItem('user', JSON.stringify(data));
 };
 
+const authHeader = () => {
+    const user = JSON.parse(localStorage.getItem('user'));
+
+    if (user && user.accessToken) {
+        return {Authorization: 'Bearer ' + user.accessToken};
+    } else {
+        return {};
+    }
+}
+
 const AuthService = {
-    register,
+    signup,
     login,
     logout,
     getCurrentUser,
+    authHeader,
+    getUserInfo,
+    updateUserInfo,
+    setUserData
 };
 
 export default AuthService;

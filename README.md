@@ -5,8 +5,8 @@
 ### `yarn install`
 install dependencies
 
-### `json-server --watch db.json -m ./node_modules/json-server-auth`
-runs the JSON serverfor auth&register mocks.
+### `yarn start:server`
+runs the JSON server for auth & register mocks.
 takes the 3000 port
 
 ### `yarn start`
