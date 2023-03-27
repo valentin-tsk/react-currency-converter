@@ -2,18 +2,14 @@
 
 ## Available Scripts
 
-### `npm start`
+### `yarn install`
+install dependencies
+
+### `json-server --watch db.json -m ./node_modules/json-server-auth`
+runs the JSON serverfor auth&register mocks.
+takes the 3000 port
+
+### `yarn start`
 
 Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+choose any port other than 3000 as it is reserved for json server

@@ -6,6 +6,8 @@
 .pnp.js
 .idea/*
 
+db.json
+
 # testing
 /coverage
 
