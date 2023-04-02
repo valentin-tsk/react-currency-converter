@@ -15,4 +15,3 @@ const CurrencyApiService = {
 };
 
 export default CurrencyApiService;
-

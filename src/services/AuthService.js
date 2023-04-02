@@ -36,7 +36,9 @@ const logout = () => {
 };
 
 const getCurrentUser = () => {
-    return JSON.parse(localStorage.getItem('user'));
+    const user = localStorage.getItem('user');
+    console.log(typeof user);
+    return typeof user !== 'undefined' ? JSON.parse(user) : null;
 };
 const setUserData = (data) => {
     localStorage.setItem('user', JSON.stringify(data));
@@ -45,11 +47,7 @@ const setUserData = (data) => {
 const authHeader = () => {
     const user = JSON.parse(localStorage.getItem('user'));
 
-    if (user && user.accessToken) {
-        return {Authorization: 'Bearer ' + user.accessToken};
-    } else {
-        return {};
-    }
+    return user?.accessToken ? {Authorization: `Bearer ${user.accessToken}`} : {};
 }
 
 const AuthService = {

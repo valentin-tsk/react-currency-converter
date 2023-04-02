@@ -2,11 +2,9 @@ import React, {useState} from 'react';
 import Select from 'react-select';
 import {HiSwitchHorizontal} from 'react-icons/hi';
 import {useQuery} from 'react-query';
-import CurrencyApiService from '../../services/CurrencyApiService';
 import './Converter.scss';
-import currencyApiService from '../../services/CurrencyApiService';
 import AuthService from '../../services/AuthService';
-import authService from "../../services/AuthService";
+import CurrencyApiService from '../../services/CurrencyApiService';
 
 const Converter = () => {
 
@@ -27,11 +25,13 @@ const Converter = () => {
     );
 
     const fetchRatios = () => {
-        return currencyApiService.fetchRatios(from);
+        return CurrencyApiService.fetchRatios(from);
     }
 
-    const {error, status, refetch} = useQuery(`ratios-from-${from}`, fetchRatios,
+    const ratiosQuery = useQuery(['ratios-from', from], fetchRatios,
         {
+            refetchOnReconnect: false,
+            refetchOnMount: false,
             refetchOnWindowFocus: false,
             onSuccess: (res) => {
                 setConverted(amount * res[from][to]);
@@ -39,6 +39,8 @@ const Converter = () => {
             }
         }
     );
+    // Здесь тоже Network неправильный (подробности в Currencies.jsx)
+
     const getOptions = () => {
         if (typeof ratios === 'undefined' || ratios === null) {
             return [];
@@ -52,16 +54,15 @@ const Converter = () => {
     }
 
     const flip = () => {
-        const temp = from;
         setFrom(to);
-        setTo(temp);
-        refetch();
+        setTo(from);
     }
 
     return (
         <div className='converter'>
-            {status === 'error' && <p>{error}</p>}
-            {status === 'success' && (
+            {ratiosQuery.status === 'loading' && <div className='container'><div className='loading'></div></div> }
+            {ratiosQuery.status === 'error' && <h3>{ratiosQuery.error}</h3>}
+            {ratiosQuery.status === 'success' && (
                 <>
                     <div className='converter-form'>
                         <div className='converter-form__amount'>
@@ -73,7 +74,7 @@ const Converter = () => {
                                    onChange={(e) => {
                                        if (e.target.value.match(/^([0-9]{1,})?(\.)?([0-9]{1,})?$/)) {
                                            setAmount(e.target.value);
-                                           refetch();
+                                           ratiosQuery.refetch();
                                        }
                                    }}/>
                         </div>
@@ -83,7 +84,6 @@ const Converter = () => {
                                     isSearchable={true}
                                     onChange={(e) => {
                                         setFrom(e.value);
-                                        refetch();
                                     }}
                                     value={from.value} placeholder={from}/>
                         </div>
@@ -99,49 +99,14 @@ const Converter = () => {
                                     title={names[to]}
                                     onChange={(e) => {
                                         setTo(e.value);
-                                        refetch();
+                                        ratiosQuery.refetch();
                                     }}
                                     value={to.value} placeholder={to}/>
                         </div>
                     </div>
                     <div className='converter__result'>
-                        <p>{amount + ' ' + from + ' = ' + converted.toFixed(2) + ' ' + to}</p>
+                        <p>{amount + ' ' + from + ' = ' + converted.toFixed(4) + ' ' + to}</p>
                     </div>
-                    {AuthService.getCurrentUser() && (
-                        <div className='converter__ratio-table'>
-                            <table className='table'>
-                                <thead>
-                                <tr>
-                                    <th>
-                                        Code
-                                    </th>
-                                    <th>
-                                        value for {amount} {from}
-                                    </th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {Object.keys(ratios).map((currencyCode) => {
-                                    return (
-                                        <tr key={currencyCode}>
-                                            <td title={names[currencyCode]}>
-                                                {currencyCode}
-                                            </td>
-                                            <td>
-                                                {(amount * parseFloat(ratios[currencyCode])).toFixed(2)}
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                    {!AuthService.getCurrentUser() && (
-                        <div className='converter__empty'>
-                            <h3>Log in or create an account to see full convertions list and more</h3>
-                        </div>
-                    )}
                 </>
             )}
         </div>

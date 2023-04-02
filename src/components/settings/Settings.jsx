@@ -11,10 +11,6 @@ const Settings = () => {
     const [names, setNames] = useState([]);
     const [responseError, setResponseError] = useState('');
 
-    const fetchUserInfo = () => {
-        return AuthService.getUserInfo(AuthService.getCurrentUser().id);
-    }
-
     const updateUserCurrency = (fromCurrency) => {
         const userData = AuthService.getCurrentUser();
         userData.baseCurrency = fromCurrency;
@@ -25,54 +21,56 @@ const Settings = () => {
             if (typeof data !== 'object') {
                 setResponseError(data);
             } else {
+                AuthService.setUserData(data);
                 setFrom(data.baseCurrency);
-                refetch();
             }
         }).catch(err => {
             setResponseError(err)
         });
     }
 
-    useQuery(`currenciesDescriptions`, CurrencyApiService.fetchNames,
+    const descriptionsQuery = useQuery(`currenciesDescriptions`, CurrencyApiService.fetchNames,
         {
             staleTime: 10000,
-            refetchOnWindowFocus: false,
             onSuccess: (res) => {
                 setNames(res);
             }
         }
     );
 
-    const getOptions = () => {
-        return Object.keys(names).map((item) => {
-            return {
-                value: item,
-                label: item
-            }
-        });
+    const fetchUserInfo = async () => {
+        return AuthService.getUserInfo(AuthService.getCurrentUser().id);
     }
 
-    const {error, status, refetch} = useQuery(`user-info-from-${from}`, fetchUserInfo,
+    const userQuery = useQuery(['user-info'], fetchUserInfo,
         {
+            staleTime: 10000,
             onSuccess: (res) => {
                 setFrom(res.baseCurrency);
-                AuthService.setUserData(res);
             }
         }
     );
 
     return (
         <div className='settings'>
-            {status === 'error' && <p>{error}</p>}
-            {status === 'success' && (
+            {userQuery.status === 'error' && <p>{userQuery.error.message}</p>}
+            {userQuery.status === 'success' && (
                 <>
                     {AuthService.getCurrentUser() && (
                         <div className='settings-form' title={names[from]}>
                             <h3>Basic from currency</h3>
-                            <Select options={getOptions()}
+                            <Select options={
+                                Object.keys(names).map((item) => {
+                                    return {
+                                        value: item,
+                                        label: item
+                                    }
+                                })
+                            }
                                     className='settings-form__select'
                                     isSearchable={true}
                                     onChange={(e) => {
+                                        setFrom(e.value);
                                         updateUserCurrency(e.value);
                                     }}
                                     value={from.value} placeholder={from}/>
